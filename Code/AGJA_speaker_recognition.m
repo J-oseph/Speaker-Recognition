@@ -18,9 +18,9 @@ window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
 for i = 1:1:length(n1)
     s1_frames{i} = s1_audio(n1(i):n2(i)-1,:); %get the frames
     s1_frames1{i} = downsample(conv(s1_frames{i},window),2); % window each frame (downsample bc its too long)
-    s1_frames2{i} = abs(fft(s1_frames1{i},N)); % take the fft
+    s1_frames2{i} = abs(fft(s1_frames1{i},N))'; % take the fft
     for j = 1:1:P
-        z{i,j} = m .* abs(s1_frames2{i}(1:mel_n)).^2;
+        z{i,j} = m * abs(s1_frames2{i}(1:mel_n)).^2;
     end
 end
 subplot(3,1,1)
@@ -29,7 +29,6 @@ subplot(3,1,2)
 plot(s1_frames1{40})
 subplot(3,1,3)
 plot(s1_frames2{40})
-close;
 % z = melfb(P, N, fs);
 %  plot(linspace(0, (12500/2), 129), z'),
 %  title('Mel-spaced filterbank'), xlabel('Frequency (Hz)');
