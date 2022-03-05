@@ -14,7 +14,6 @@ mel_n = 1 + floor(N/2);
 
 % precompute the Hamming window
 window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
-num = zeros(11,P-1);
 for i = 1:1:length(training_audio)
     
     frame_beginning = 1:N-M:length(training_audio{i})-N;
@@ -33,14 +32,8 @@ for i = 1:1:length(training_audio)
         % ignore the first element (P-1 amount per frame)
         frames5{i,j} = dct(log10(frames4{i,j}));
         frames5{i,j} = frames5{i,j}(2:end);
-        % get a running total to get average (?)
-        for k = 1:1:P-1
-            num(i,k) = num(i,k) + frames5{i,j}(k);
-        end
-    end
-    % calculate average (?)
-    for k = 1:1:P-1
-        num(i,k) = num(i,k) / length(frame_beginning);
+
+
     end
 
 end
