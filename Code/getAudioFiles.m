@@ -1,5 +1,5 @@
 function [g,fs] = getAudioFiles()
-path = '/Users/ansongrover/Documents/GitHub/Speaker-Recognition';
+path = getPath();
 % path is specific for each computer
 % should be something like 'C:\....\Speaker-Recognition'
 subpath = '/Data/Training_Data/s';

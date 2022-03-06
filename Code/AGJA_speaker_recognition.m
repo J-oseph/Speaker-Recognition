@@ -24,6 +24,7 @@ for i = 1:1:length(training_audio)
     frame_beginning = 1:M:length(training_audio{i})-N;
     frame_end = frame_beginning + N;
     %plot(window)
+    frame_length(i) = length(frame_beginning);
     for j = 1:1:length(frame_beginning)
        %create the frames
         frames1{i,j} = training_audio_norm{i}(frame_beginning(j):frame_end(j)-1,:)';
@@ -32,7 +33,7 @@ for i = 1:1:length(training_audio)
         % take FFT and absolute value
         frames3{i,j} = abs(fft(frames2{i,j},N));
         % get the mel spectrum coeff (P amount per frame)
-        frames4{i,j} = filterbank_coeff * abs(frames3{i,j}(1:mel_n)).^2';
+        frames4{i,j} = filterbank_coeff * abs(frames3{i,j}(1:mel_n)).^2';%check .^2
         % get mel cepstrum: DCT of the LOG of each spectrum coeff
         frames5{i,j} = dct(log10(frames4{i,j}));
         % ignore the first element (P-1 amount per frame)
@@ -49,7 +50,6 @@ end
 %struct
 %N-M
 
-
 epsilon = .01;
 thresh = .01;
 codeword_lim = 64;
@@ -65,7 +65,7 @@ i=1;
     % each column is a speaker, each row is sum of mel coeffs
     row_sum(:,i) = sum(row_mat,2);
     % divide by number of frames
-    row_avg(:,i) = row_sum(:,i)/((length(training_audio{i})-N)/M); 
+    row_avg(:,i) = row_sum(:,i)/frame_length(i); 
     %define centroid matrix
     centroids(:,:,i) = row_avg(:,i);
     while size(centroids,2) < codeword_lim
@@ -79,15 +79,14 @@ i=1;
         %closer
         %recompute centroids
         d = disteu(row_mat,centroids(:,:,i));
-        size(d)
         err = .005;
-        [~,I] = max(d,[],2);
-       
+        [~,I] = min(d,[],2);
         end
     end
             
             
 
+ 
 
 
 
