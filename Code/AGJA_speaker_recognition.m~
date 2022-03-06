@@ -34,12 +34,7 @@ for i = 1:1:length(training_audio)
         frames5{i,j} = frames5{i,j}(2:end);
     end
 end
-
-[test_audio, fs] = getTestAudioFiles();
- 
-sound(training_audio{8})
-%sound(test_audio{8})
-
+sound(
     % average
 % subplot(2,1,1)
 % stem(frames2{1,40})
