@@ -1,3 +1,4 @@
 *.asv
 getPath.m
 .DS_Store
+*.DS_Store
