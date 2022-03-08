@@ -50,38 +50,32 @@ end
 
 
 %Parameters
-epsilon = .01;
-%its tough to come up with good error metric since a "low" total
+%it's tough to come up with good error metric since a "low" total
 %distance error is dependent on how many centroids there
 %i've based the error on how much it changes between iterations
-thresh = .001;
-codeword_lim = 16;
+thresh = .001; %thresh*100 is allowed error percent change 
+epsilon = .01; %splitting parameter
+codeword_lim = 16; %maximum number of centroids
 
-
-%currently only works for one speaker at a time since i didn't use cells
-%i need to rewrite everything in terms of cells
-
-
- %for i = 1:length(training_audio) %loop thru speakers
- i = 1;
-    %make code books
-    %take all mel coeffs of all frames of ith speaker
+%make code books
+for i = 1:length(training_audio) %loop thru speakers
+    %take all mel coeffs of all frames of ith speaker as cell array
     temp_row = frames5(i,:); 
     % convert to matrix, index 1 is mel coeff coordinate, index 2 is frame
     row_mat = cell2mat(temp_row); 
-    % each column is a speaker, each row is sum of mel coeffs
-    row_sum(:,i) = sum(row_mat,2);
+    % column vector, each entry is sum of mel coeffs
+    row_sum = sum(row_mat,2);
     % divide by number of frames
-    row_avg(:,i) = row_sum(:,i)/frame_amount(i); 
+    row_avg = row_sum/frame_amount(i); 
     %define centroid matrix
-    centroids(:,:,i) = row_avg(:,i);
+    centroids{i} = row_avg;
     
-    while size(centroids,2) < codeword_lim
+    while size(centroids{i},2) < codeword_lim
         
         
         % split centroids,index 1 is the mel coeff  index 2 is the centroid 
         %number, , index 3 is the speaker number
-        centroids = [centroids(:,:,i)*(1+epsilon), centroids(:,:,i)*(1-epsilon)];
+        centroids{i} = [centroids{i}*(1+epsilon), centroids{i}*(1-epsilon)];
         
         
         %reset error 
@@ -92,12 +86,12 @@ codeword_lim = 16;
         err_old = err_new;    
             
         %compute distance of each frame vector to centroids and determine closer centroid     
-        d = disteu(row_mat,centroids(:,:,i)); %d has centroid# 2nd index
+        d = disteu(row_mat,centroids{i}); %d has centroid# 2nd index
         [~,I] = min(d,[],2);
         
         
         %initialize cell array to store frames after centroid splitting
-        for k =1:size(centroids,2)
+        for k =1:size(centroids{i},2)
             centroid_frames{i,k} = [];
         end
       
@@ -109,24 +103,29 @@ codeword_lim = 16;
       
         
         %take assigned frames and recompute each centroid
-        for k = 1:size(centroids,2) %loop thru centroids
+        for k = 1:size(centroids{i},2) %loop thru centroids
             for n = 1:P-1 %loop thru mel coefficients
                 running_total = 0;
                 for m = 1:size(centroid_frames{i,k},1)%loop thru centroid frame entries
                     running_total = row_mat(n,centroid_frames{i,k}(m))+running_total;
                 end
-                centroids(n,k,i) = running_total/size(centroid_frames{i,k},1);
+                centroids{i}(n,k) = running_total/size(centroid_frames{i,k},1);
             end
         end
         
         %find average distance
-        d = disteu(row_mat,centroids(:,:,i));
+        d = disteu(row_mat,centroids{i});
         [~,I] = min(d,[],2);
         err_new = sum(min(d,[],2));     
         end
     end
-   
-          
+end
+%Key output is centroids{i} indexed by speaker, each entry is 
+%a 16 x 19 set of centroids which represents the 19 coordinates of each of
+%16 codewords for each speaker
+    
+
+%LBG
 %sum over each mel coeff across all frames(~140-270) of
 %each speaker, divide the total by the number of frames, this vector is the
 %cetroid of all data for that speaker, then take each vector component and
