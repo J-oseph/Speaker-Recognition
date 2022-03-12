@@ -84,7 +84,7 @@ for i = 1:length(training_audio) %loop thru speakers
         d = disteu(mel_mat,centroids{i}); %d is array giving distance with 1st index frame id and second index centroid id
         [~,I] = min(d,[],2); %I is column vector indexed by frame id, value stored is id of the nearest centroid to that frame
          
-        %assign to each centroid frames which are closest
+        %assign to each centroid, frames which are closest
         for  j = 1:frame_amount(i) %for each frame
               centroid_frames{I(j)} = [centroid_frames{I(j)};j]; 
               %go to index I(j) (centroid id) and append j (frame id) to what is stored there
@@ -110,8 +110,8 @@ for i = 1:length(training_audio) %loop thru speakers
 end
 
 %Key output is centroids{i} indexed by speaker, each entry is 
-%a 16 x 19 set of centroids which represents the 19 coordinates of each of
-%16 codewords for each speaker
+%a 8 x 19 set of centroids which represents the 19 coordinates of each of
+%8 codewords for each speaker
 %% Get mel coeffs for test audio
 
 [test_audio, fs] = getAudioFiles('test');
@@ -159,10 +159,17 @@ end
 %sound(training_audio{3},12500)
 %sound(test_audio{3})
 
+%TEST 1 
+%75% accuracy
+
 %TEST2
 %fs =12500
 %256/12500 = 20.48 ms
 %plot(training_audio{1})
+periodogram = cell2mat(frames3(1,:));
+
+pcolor(periodogram)
+%plot
 %spectrogram(training_audio{1},256,156)
 %spectrogram(training_audio{1},128,80)
 %spectrogram(training_audio{1},512,380)
