@@ -252,12 +252,19 @@ end
 % subpath = '/Data/Test_Data/s';
 % ext = 'filt.wav';
 % for i = 1:length(test_audio)
-%     disp('test')
 %     TEST_AUDIO{i} = fft(test_audio{i});
 %     B = fft(b,length(TEST_AUDIO{i}));
 %     TEST_AUDIO_FILT{i} = B'.*TEST_AUDIO{i};
 %     test_audio_filt{i} = ifft(TEST_AUDIO_FILT{i});
-%     %disp(strcat(path,subpath,int2str(i),ext))
 %     audiowrite(strcat(path,subpath,int2str(i),ext),test_audio_filt{i},fs)
 % end
+%still need to test the code on these and see if it can still match 
+%them to training data
 
+%TEST9
+%record two more people? replace existing speakers with those people,
+%test again and compare accuracy?
+
+%TEST10
+%test the system with other datasets, remember to change everything to the 
+%same sampling frequency
