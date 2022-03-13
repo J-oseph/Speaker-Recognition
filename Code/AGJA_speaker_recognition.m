@@ -2,11 +2,18 @@
 clear;
 close;
 
-%% Get mel coeffs for training data
-% declare variables
+%% Parameters
+
+% MFCC
 N = 256;
 M = 100;
 P = 20;
+
+%LBG 
+thresh = .001; %thresh*100 is allowed percent error change 
+epsilon = .01; %splitting parameter
+codeword_lim = 8; %maximum number of centroids
+%% Get mel coeffs for training data
 
 % import the training data from data files
 [training_audio,fs] = getAudioFiles('train');
@@ -42,22 +49,18 @@ for i = 1:1:length(training_audio)
         % get mel cepstrum: DCT of the LOG of each spectrum coeff
         frames5{i,j} = dct(log10(frames4{i,j})); 
         % ignore the first element (P-1 amount per frame)
-        frames5{i,j} = frames5{i,j}(2:end);
+        frames6{i,j} = frames5{i,j}(2:end);
     end
 end
 
 %% LBG
 
-%Parameters
-thresh = .001; %thresh*100 is allowed percent error change 
-epsilon = .01; %splitting parameter
-codeword_lim = 8; %maximum number of centroids
 
 for i = 1:length(training_audio) %loop thru speakers
     % convert cell array to matrix, index 1 is mel coeff number, index 2 is frame
-    mel_mat = cell2mat(frames5(i,:)); 
+    mfcc_mat = cell2mat(frames6(i,:)); 
     % column vector, each entry is sum of mel coeffs across frames
-    mel_avg = sum(mel_mat,2)/frame_amount(i);
+    mel_avg = sum(mfcc_mat,2)/frame_amount(i);
     %define centroid cell array, indexed by speaker, contains matrix with 
     %1st index mel coeff number, and 2nd index is centroid number
     centroids{i} = mel_avg;
@@ -81,7 +84,7 @@ for i = 1:length(training_audio) %loop thru speakers
         end
         
         %compute distance of each frame vector to centroids and determine closer centroid     
-        d = disteu(mel_mat,centroids{i}); %d is array giving distance with 1st index frame id and second index centroid id
+        d = disteu(mfcc_mat,centroids{i}); %d is array giving distance with 1st index frame id and second index centroid id
         [~,I] = min(d,[],2); %I is column vector indexed by frame id, value stored is id of the nearest centroid to that frame
          
         %assign to each centroid, frames which are closest
@@ -95,14 +98,14 @@ for i = 1:length(training_audio) %loop thru speakers
             for n = 1:P-1 %for each mel coefficient
                 running_total = 0; %initialize variable to find sum
                 for m = 1:size(centroid_frames{k},1)%for each frame assigned to that centroid
-                    running_total = mel_mat(n,centroid_frames{k}(m))+running_total;
+                    running_total = mfcc_mat(n,centroid_frames{k}(m))+running_total;
                 end
                 centroids{i}(n,k) = running_total/size(centroid_frames{k},1);
             end
         end
         
         %find average distance to determine error
-        d = disteu(mel_mat,centroids{i});
+        d = disteu(mfcc_mat,centroids{i});
         err_new = sum(min(d,[],2));%total distance between all frames
         %and their nearest centroid
         end
@@ -140,16 +143,16 @@ for i = 1:1:length(test_audio)
         % get mel cepstrum: DCT of the LOG of each spectrum coeff
         framest5{i,j} = dct(log10(framest4{i,j})); 
         % ignore the first element (P-1 amount per frame)
-        framest5{i,j} = framest5{i,j}(2:end);
+        framest6{i,j} = framest5{i,j}(2:end);
     end
 end
 
 %% Compare test audio to training audio
 
  for j = 1:8 %pick which test audio file 1-8
-     mel_mat = cell2mat(framest5(j,:)); %mel coeffs for speaker i converted to array
+     mfcc_mat = cell2mat(framest6(j,:)); %mel coeffs for speaker i converted to array
      for i = 1:length(training_audio) %loop thru training set
-        d = disteu(mel_mat,centroids{i});
+        d = disteu(mfcc_mat,centroids{i});
         distortion(i) = sum(min(d,[],2));
      end
      [~,I] = min(distortion);
@@ -162,31 +165,60 @@ end
 %TEST 1 
 %75% accuracy
 
-%TEST2
+%TEST2 4 plots
 %fs =12500
+%number of ms
 %256/12500 = 20.48 ms
+%plot time domain signal
 %plot(training_audio{1})
-periodogram = cell2mat(frames3(1,:));
+%plot stft using mfcc code directly, plot on log scale
+% figure;
+% stft_mat = (cell2mat(frames3(1,:)'));
+% pcolor(log10(stft_mat(:,floor(1:N/2)))) %plot 0 to pi
+%(run again with different N, and M)
 
-pcolor(periodogram)
-%plot
-%spectrogram(training_audio{1},256,156)
-%spectrogram(training_audio{1},128,80)
-%spectrogram(training_audio{1},512,380)
-
-
-%TEST3
+%TEST3 2 plots
+%plot mel spaced filterbank responses
+%compare to theoretical? maybe we're supposed to say it looks a little 
+%jagged in some places due to discretization error of N = 256?
 % z = melfb(P, N, fs);
-%  plot(linspace(0, (12500/2), 129), z'),
-%  title('Mel-spaced filterbank'), xlabel('Frequency (Hz)');
+% plot(linspace(0, (12500/2), 129), z'),
+% title('Mel-spaced filterbank'), xlabel('Frequency (Hz)');
+%before cepstrum, after mel applied, plot on log scale
+%mel_bins = (cell2mat(frames4(i,:)));
+%figure;
+%pcolor(log10(mel_bins))
 
-% mel_mat = cell2mat(frames5(1,:));
-% pcolor(mel_mat)
 
+%TEST4 1 plot
+%after cepstrum step, 1st coefficient removed, linear scale
+% mfcc_mat = (cell2mat(frames6(1,:)));
+% pcolor(mfcc_mat)
 
-%TEST5
-%  mel_mat1 = cell2mat(frames5(1,:));
-%  mel_mat2 = cell2mat(frames5(2,:));
-%  scatter(mel_mat1(6,:),mel_mat1(4,:))
+%TEST5 1 plot
+%  mfcc_mat1 = cell2mat(frames6(1,:));
+%  mfcc_mat2 = cell2mat(frames6(2,:));
+%  mfcc_mat3 = cell2mat(frames6(3,:));
+%  scatter(mfcc_mat1(1,:),mfcc_mat1(3,:))
 %  hold on
-%  scatter(mel_mat2(6,:),mel_mat2(4,:))
+%  scatter(mfcc_mat2(1,:),mfcc_mat2(3,:))
+% hold on
+%  scatter(mfcc_mat3(1,:),mfcc_mat3(3,:))
+
+%TEST6 1 plot
+%  mfcc_mat1 = cell2mat(frames6(1,:));
+%  mfcc_mat2 = cell2mat(frames6(2,:));
+%  scatter(mfcc_mat1(1,:),mfcc_mat1(3,:))
+%  hold on
+%  scatter(mfcc_mat2(1,:),mfcc_mat2(3,:))
+%  hold on 
+%  scatter(centroids{1}(1,1:8),centroids{1}(3,1:8),'filled')
+
+%TEST7
+%With parameters, 256,100,20,.001,.01, and 8 code gets %100 correct,
+%much better than human 75% correct
+
+%TEST8
+%firpmord(
+%firpm(
+
