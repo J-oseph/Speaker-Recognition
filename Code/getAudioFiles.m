@@ -1,6 +1,5 @@
 function [g,fs] = getAudioFiles(type)
 path = getPath();
-Desired_Rate = 12500;
 % path is specific for each computer. Needs to go to the Repo folder
 % should be something like 'C:\....\Speaker-Recognition'
 N = 1;
@@ -17,7 +16,5 @@ end
 g = {audio(:,1)};
 for index = 2:1:N
     [audio,fs] = audioread(strcat(path,subpath,int2str(index),ext));
-    [Num,Den] = rat(Desired_Rate/fs);
-    audio = resample(audio,Den,Num);
     g{end+1}=(audio(:,1));
 end

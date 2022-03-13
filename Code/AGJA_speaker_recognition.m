@@ -14,9 +14,19 @@ thresh = .001; %thresh*100 is allowed percent error change
 epsilon = .01; %splitting parameter
 codeword_lim = 8; %maximum number of centroids
 %% Get mel coeffs for training data
-
+Desired_Rate = 12500;
 % import the training data from data files
 [training_audio,fs] = getAudioFiles('train');
+
+%add new audio
+path = getPath();
+subpath = '/Data/Training_Data/anson_train.wav';
+[audio,Fs] = audioread(strcat(path,subpath));
+%resample to 12500 hz
+[Num,Den] = rat(Desired_Rate/Fs);
+audio = resample(audio,Num,Den);
+%append to rest of training data
+training_audio = [training_audio, audio];
 
 %normalize audio signals - this may not be best way to normalize
 for i = 1:length(training_audio)
@@ -29,6 +39,8 @@ mel_n = 1 + floor(N/2);
 
 % precompute the Hamming window
 window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
+
+
 
 for i = 1:1:length(training_audio)
     % i is the index of each speaker
@@ -119,10 +131,22 @@ end
 
 [test_audio, fs] = getAudioFiles('test');
 
+path = getPath();
+subpath = '/Data/Test_Data/anson_test.wav';
+[audio,Fs] = audioread(strcat(path,subpath));
+%resample to 12500 hz 
+[Num,Den] = rat(Desired_Rate/Fs);
+audio = resample(audio,Num,Den);
+%append to test audio
+test_audio = [test_audio, audio];
+
 %normalize audio signals - this may not be best way to normalize
 for i = 1:length(test_audio)
     test_audio_norm{i} = test_audio{i}/max(test_audio{i});
 end
+
+
+
 
 for i = 1:1:length(test_audio)
     % i is the index of each speaker
@@ -149,7 +173,7 @@ end
 
 %% Compare test audio to training audio
 
- for j = 1:8 %pick which test audio file 1-8
+ for j = 1:9 %pick which test audio file 1-8
      mfcc_mat = cell2mat(framest6(j,:)); %mel coeffs for speaker i converted to array
      for i = 1:length(training_audio) %loop thru training set
         d = disteu(mfcc_mat,centroids{i});
@@ -217,8 +241,10 @@ end
 %TEST7
 %With parameters, 256,100,20,.001,.01, and 8 code gets %100 correct,
 %much better than human 75% correct
+% need to get joe's voice
 
 %TEST8
+%design notch filter
 %firpmord(
 %firpm(
 
