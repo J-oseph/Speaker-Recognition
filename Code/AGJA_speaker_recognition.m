@@ -21,9 +21,9 @@ Desired_Rate = 12500;
 %add new audio
 path = getPath();
 subpath = '/Data/Training_Data/anson_train.wav';
-[audio,Fs] = audioread(strcat(path,subpath));
+[audio,Rate] = audioread(strcat(path,subpath));
 %resample to 12500 hz
-[Num,Den] = rat(Desired_Rate/Fs);
+[Num,Den] = rat(Desired_Rate/Rate);
 audio = resample(audio,Num,Den);
 %append to rest of training data
 training_audio = [training_audio, audio];
@@ -133,9 +133,9 @@ end
 
 path = getPath();
 subpath = '/Data/Test_Data/anson_test.wav';
-[audio,Fs] = audioread(strcat(path,subpath));
+[audio,Rate] = audioread(strcat(path,subpath));
 %resample to 12500 hz 
-[Num,Den] = rat(Desired_Rate/Fs);
+[Num,Den] = rat(Desired_Rate/Rate);
 audio = resample(audio,Num,Den);
 %append to test audio
 test_audio = [test_audio, audio];
@@ -144,9 +144,6 @@ test_audio = [test_audio, audio];
 for i = 1:length(test_audio)
     test_audio_norm{i} = test_audio{i}/max(test_audio{i});
 end
-
-
-
 
 for i = 1:1:length(test_audio)
     % i is the index of each speaker
@@ -241,10 +238,26 @@ end
 %TEST7
 %With parameters, 256,100,20,.001,.01, and 8 code gets %100 correct,
 %much better than human 75% correct
-% need to get joe's voice
+% works on my test and training data, need to get joe's voice
 
 %TEST8
-%design notch filter
-%firpmord(
-%firpm(
+%design notch filter, apply to signals, save as different test audio
+% f = [0,500,600,6250];
+% a = [1,0,1];
+% dev = [.01,.01,.01];
+% [n,fo,ao,w] = firpmord(f,a,dev,fs);
+% b = firpm(n,fo,ao,w);
+% %apply filter to audio signals
+% path = getPath();
+% subpath = '/Data/Test_Data/s';
+% ext = 'filt.wav';
+% for i = 1:length(test_audio)
+%     disp('test')
+%     TEST_AUDIO{i} = fft(test_audio{i});
+%     B = fft(b,length(TEST_AUDIO{i}));
+%     TEST_AUDIO_FILT{i} = B'.*TEST_AUDIO{i};
+%     test_audio_filt{i} = ifft(TEST_AUDIO_FILT{i});
+%     %disp(strcat(path,subpath,int2str(i),ext))
+%     audiowrite(strcat(path,subpath,int2str(i),ext),test_audio_filt{i},fs)
+% end
 
