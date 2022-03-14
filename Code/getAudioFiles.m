@@ -24,58 +24,9 @@ for index = 2:1:N
 end
 
 % adding our voices
-if (strcmp(type,'test'))
-    subpath1 = '/Data/Test_Data/';
-    ext = '_test.wav';
-    subpath2 = 'anson';
-
-    [audio,Rate] = audioread(strcat(path,subpath1,subpath2,ext));
-    [Num,Den] = rat(12500/Rate);
-    audio = resample(audio,Num,Den);
-    g = [g, audio];
-
-    subpath2 = 'joseph';
-
-    [audio,Rate] = audioread(strcat(path,subpath1,subpath2,ext));
-    %resample to 12500 hz
-    [Num,Den] = rat(12500/Rate);
-    audio = resample(audio,Num,Den);
-    g = [g, audio];
-
-elseif (strcmp(type,'train'))
-    subpath1 = '/Data/Training_Data/';
-    ext = '_train.wav';
-    subpath2 = 'anson';
-
-    [audio,Rate] = audioread(strcat(path,subpath1,subpath2,ext));
-    %resample to 12500 hz
-    [Num,Den] = rat(12500/Rate);
-    audio = resample(audio,Num,Den);
-    g = [g, audio];
-
-    subpath2 = 'joseph';
-    
-    [audio,Rate] = audioread(strcat(path,subpath1,subpath2,ext));
-    %resample to 12500 hz
-    [Num,Den] = rat(12500/Rate);
-    audio = resample(audio,Num,Den);
-    g = [g, audio];
-elseif (strcmp(type,'notched'))
-    subpath1 = '/Data/Test_Data/';
-    ext = '_notched.wav';
-    subpath2 = 'anson';
-    strcat(path,subpath1,subpath2,ext)
-    [audio,Rate] = audioread(strcat(path,subpath1,subpath2,ext));
-    %resample to 12500 hz
-    [Num,Den] = rat(12500/Rate);
-    audio = resample(audio,Num,Den);
-    g = [g, audio];
-
-    subpath2 = 'joseph';
-    
-    [audio,Rate] = audioread(strcat(path,subpath1,subpath2,ext));
-    %resample to 12500 hz
-    [Num,Den] = rat(12500/Rate);
-    audio = resample(audio,Num,Den);
-    g = [g, audio];
+g = getMemberAudio(g, path,type);
+% adding extra voices   FROM https://www.kaggle.com/kongaevans/speaker-recognition-dataset
+g = getMandelaAudio(g, path,type);
+g = getThatcherAudio(g, path,type);
+g = getStoltenbergAudio(g, path,type);
 end

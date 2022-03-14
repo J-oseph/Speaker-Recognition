@@ -9,7 +9,7 @@ close;
 % should be something like 'C:\....\Speaker-Recognition'
 path = getPath(); % REPLACE THIS!!!!
 
-notched = true;
+notched = false;
 
 % MFCC
 N = 256;
@@ -27,6 +27,7 @@ codeword_lim = 8; %maximum number of centroids
 %% Get mel coeffs for training data
 % import the training data from data files
 [training_audio,fs] = getAudioFiles(path,'train');
+r = training_audio;
 %normalize audio signals - this may not be best way to normalize
 for i = 1:length(training_audio)
     training_audio{i} = training_audio{i}/max(training_audio{i});
@@ -161,7 +162,7 @@ end
 
 
 %% Compare test audio to training audio
-guesses = []
+guesses = [];
  for j = 1:length(test_audio) %pick which test audio file 1-8
      mfcc_mat = cell2mat(framest6(j,:)); %mel coeffs for speaker i converted to array
      for i = 1:length(training_audio) %loop thru training set
@@ -174,26 +175,61 @@ guesses = []
  end
 
  num_correct = 0;
+ disp('Original Audio: ')
  for j = 1:8
     txt = '';
     if (guesses(j) == j)
         num_correct = num_correct + 1;
+        txt = '  Correct';
     end
-    txt = ['Guess #',num2str(j),': ',num2str(guesses(j))];
+    txt = ['    ','Guess #',num2str(j),': ',num2str(guesses(j)),' ',txt];
     disp(txt)
  end
+ disp(['    ','Accuracy: ',num2str(num_correct/8 * 100),'%'])
+ disp("Member Audio: ")
  for j = 12:13
     txt = '';
     if (guesses(j-3) == j)
         num_correct = num_correct + 1;
+        txt = 'Correct';
     end
-    txt = ['Guess #',num2str(j),': ',num2str(guesses(j-3))];
+    txt = ['    ','Guess #',num2str(j),': ',num2str(guesses(j-3)),' ',txt];
     disp(txt)
  end
- disp(['Accuracy: ',num2str(num_correct/length(guesses) * 100),'%'])
-  
-%sound(training_audio{3},12500)
-%sound(test_audio{3})
+ disp('Mandela Audio: ')
+ for j = 11:16
+    txt = '';
+    if (guesses(j) == 14)
+        num_correct = num_correct + 1;
+        txt = ' Correct';
+    end
+    txt = ['    ','Guess #',num2str(j-10),': ',num2str(guesses(j)),' ',txt];
+    disp(txt)
+ end
+ disp('Thatcher Audio: ')
+ for j = 17:22
+    txt = '';
+    if (guesses(j) == 15)
+        num_correct = num_correct + 1;
+        txt = ' Correct';
+    end
+    txt = ['    ','Guess #',num2str(j-16),': ',num2str(guesses(j)),' ',txt];
+    disp(txt)
+
+ end
+ disp('Stoltenberg Audio: ')
+ for j = 22:28
+    txt = '';
+    if (guesses(j) == 16)
+        num_correct = num_correct + 1;
+        txt = ' Correct';
+    end
+    txt = ['    ','Guess #',num2str(j-21),': ',num2str(guesses(j)),' ',txt];
+    disp(txt)
+
+ end
+ disp(['Overall Accuracy: ',num2str(num_correct/length(guesses) * 100),'%'])
+
 
 
 %% Project Tasks
