@@ -1,55 +1,52 @@
-%clc;
+clc;
 clear;
 close;
 
+
 %% Parameters
+
+% path is specific for each computer. Needs to go to the Repo folder
+% should be something like 'C:\....\Speaker-Recognition'
+path = getPath(); % REPLACE THIS!!!!
+
+notched = true;
 
 % MFCC
 N = 256;
-M = 100;
+M = 150;
 P = 20;
+
+window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
 
 %LBG 
 thresh = .001; %thresh*100 is allowed percent error change 
 epsilon = .01; %splitting parameter
 codeword_lim = 8; %maximum number of centroids
+
+
 %% Get mel coeffs for training data
-Desired_Rate = 12500;
 % import the training data from data files
-[training_audio,fs] = getAudioFiles('train');
-
-%add new audio
-path = getPath();
-subpath = '/Data/Training_Data/anson_train.wav';
-[audio,Rate] = audioread(strcat(path,subpath));
-%resample to 12500 hz
-[Num,Den] = rat(Desired_Rate/Rate);
-audio = resample(audio,Num,Den);
-%append to rest of training data
-training_audio = [training_audio, audio];
-
+[training_audio,fs] = getAudioFiles(path,'train');
 %normalize audio signals - this may not be best way to normalize
 for i = 1:length(training_audio)
-    training_audio_norm{i} = training_audio{i}/max(training_audio{i});
+    training_audio{i} = training_audio{i}/max(training_audio{i});
 end
 
 % get the filterband coeff's
 filterbank_coeff = melfb(P, N, fs);
 mel_n = 1 + floor(N/2);
 
-% precompute the Hamming window
-window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
 
-for i = 1:1:length(training_audio)
+for i = 1:length(training_audio)
     % i is the index of each speaker
     % calculate frame beg, end, and amount
     frame_beginning = 1:M:length(training_audio{i})-N;
     frame_end       = frame_beginning + N;
     frame_amount(i) = length(frame_beginning);
 
-    for j = 1:1:frame_amount(i)
+    for j = 1:frame_amount(i)
         %create the frames
-        frames1{i,j} = training_audio_norm{i}(frame_beginning(j):frame_end(j)-1,:)';
+        frames1{i,j} = training_audio{i}(frame_beginning(j):frame_end(j)-1,:)';
         % window each frame
         frames2{i,j} = window.*frames1{i,j};
         % take FFT and absolute value
@@ -63,8 +60,8 @@ for i = 1:1:length(training_audio)
     end
 end
 
-%% LBG
 
+%% LBG
 for i = 1:length(training_audio) %loop thru speakers
     % convert cell array to matrix, index 1 is mel coeff number, index 2 is frame
     mfcc_mat = cell2mat(frames6(i,:)); 
@@ -124,34 +121,31 @@ end
 %Key output is centroids{i} indexed by speaker, each entry is 
 %a 8 x 19 set of centroids which represents the 19 coordinates of each of
 %8 codewords for each speaker
+
+
 %% Get mel coeffs for test audio
-
-[test_audio, fs] = getAudioFiles('test filt');
-
-path = getPath();
-subpath = '/Data/Test_Data/anson_test.wav';
-[audio,Rate] = audioread(strcat(path,subpath));
-%resample to 12500 hz 
-[Num,Den] = rat(Desired_Rate/Rate);
-audio = resample(audio,Num,Den);
-%append to test audio
-test_audio = [test_audio, audio];
+if (notched)
+    param = 'notched';
+else
+    param = 'test';
+end
+[test_audio, fs] = getAudioFiles(path,param);
 
 %normalize audio signals - this may not be best way to normalize
 for i = 1:length(test_audio)
-    test_audio_norm{i} = test_audio{i}/max(test_audio{i});
+    test_audio{i} = test_audio{i}/max(test_audio{i});
 end
 
-for i = 1:1:length(test_audio)
+for i = 1:length(test_audio)
     % i is the index of each speaker
     % calculate frame beg, end, and amount
     frame_beginning = 1:M:length(test_audio{i})-N;
     frame_end       = frame_beginning + N;
     frame_amount(i) = length(frame_beginning);
 
-    for j = 1:1:frame_amount(i)
+    for j = 1:frame_amount(i)
         %create the frames
-        framest1{i,j} = test_audio_norm{i}(frame_beginning(j):frame_end(j)-1,:)';
+        framest1{i,j} = test_audio{i}(frame_beginning(j):frame_end(j)-1,:)';
         % window each frame
         framest2{i,j} = window.*framest1{i,j};
         % take FFT and absolute value
@@ -165,56 +159,80 @@ for i = 1:1:length(test_audio)
     end
 end
 
-%% Compare test audio to training audio
 
- for j = 1:9 %pick which test audio file 1-8
+%% Compare test audio to training audio
+guesses = []
+ for j = 1:length(test_audio) %pick which test audio file 1-8
      mfcc_mat = cell2mat(framest6(j,:)); %mel coeffs for speaker i converted to array
      for i = 1:length(training_audio) %loop thru training set
         d = disteu(mfcc_mat,centroids{i});
         distortion(i) = sum(min(d,[],2));
      end
      [~,I] = min(distortion);
-     disp(I) %displays which training audio that corresponds to
+     guesses = [guesses I];
+%      disp(I) %displays which training audio that corresponds to
  end
+
+ num_correct = 0;
+ for j = 1:8
+    txt = '';
+    if (guesses(j) == j)
+        num_correct = num_correct + 1;
+    end
+    txt = ['Guess #',num2str(j),': ',num2str(guesses(j))];
+    disp(txt)
+ end
+ for j = 12:13
+    txt = '';
+    if (guesses(j-3) == j)
+        num_correct = num_correct + 1;
+    end
+    txt = ['Guess #',num2str(j),': ',num2str(guesses(j-3))];
+    disp(txt)
+ end
+ disp(['Accuracy: ',num2str(num_correct/length(guesses) * 100),'%'])
   
 %sound(training_audio{3},12500)
 %sound(test_audio{3})
 
+
 %% Project Tasks
 
-%TEST 1 
-%75% accuracy
+% % % TEST 1 
+% 75 percent accuracy
 
-%TEST2 4 plots
-%fs =12500
-%number of ms
-%256/12500 = 20.48 ms
-%plot time domain signal
-%plot(training_audio{1})
-%plot stft using mfcc code directly, plot on log scale
+% % % TEST2 4 plots
+% % sampling frequency = 12.5 KHz;
+% %number of ms
+% %256/12500 = 20.48 ms
+% %plot time domain signal
+% plot(training_audio{1})
+% title('Time Domain Signal')
+% %plot stft using mfcc code directly, plot on log scale
 % figure;
 % stft_mat = (cell2mat(frames3(1,:)'));
-% pcolor(log10(stft_mat(:,floor(1:N/2)))) %plot 0 to pi
-%(run again with different N, and M)
+% pcolor(log10(stft_mat(:,floor(1:N/2)))') %plot 0 to pi
+% title('Periodogram')
+% %(run again with different N, and M)
 
-%TEST3 2 plots
-%plot mel spaced filterbank responses
-%compare to theoretical? maybe we're supposed to say it looks a little 
-%jagged in some places due to discretization error of N = 256?
+% % % TEST3 2 plots
+% plot mel spaced filterbank responses
+% compare to theoretical? maybe we're supposed to say it looks a little 
+% jagged in some places due to discretization error of N = 256?
 % z = melfb(P, N, fs);
 % plot(linspace(0, (12500/2), 129), z'),
 % title('Mel-spaced filterbank'), xlabel('Frequency (Hz)');
-%before cepstrum, after mel applied, plot on log scale
-%mel_bins = (cell2mat(frames4(i,:)));
-%figure;
-%pcolor(log10(mel_bins))
+% % before cepstrum, after mel applied, plot on log scale
+% mel_bins = (cell2mat(frames4(i,:)));
+% figure;
+% pcolor(log10(mel_bins))
 
-%TEST4 1 plot
+% % % TEST4 1 plot
 %after cepstrum step, 1st coefficient removed, linear scale
 % mfcc_mat = (cell2mat(frames6(1,:)));
 % pcolor(mfcc_mat)
 
-%TEST5 1 plot
+% % % TEST5 1 plot
 %  mfcc_mat1 = cell2mat(frames6(1,:));
 %  mfcc_mat2 = cell2mat(frames6(2,:));
 %  mfcc_mat3 = cell2mat(frames6(3,:));
@@ -224,7 +242,7 @@ end
 % hold on
 %  scatter(mfcc_mat3(1,:),mfcc_mat3(3,:))
 
-% TEST6 1 plot
+% % % TEST6 1 plot
 %  mfcc_mat1 = cell2mat(frames6(1,:));
 %  mfcc_mat2 = cell2mat(frames6(2,:));
 %  scatter(mfcc_mat1(1,:),mfcc_mat1(3,:))
@@ -233,12 +251,12 @@ end
 %  hold on 
 %  scatter(centroids{1}(1,1:8),centroids{1}(3,1:8),'filled')
 
-%TEST7
+% % % TEST7
 %With parameters, 256,100,20,.001,.01, and 8 code gets %100 correct,
 %much better than human 75% correct
 % works on my test and training data, need to get joe's voice
 
-%TEST8
+% % % TEST8
 %design notch filter, apply to signals, save as different test audio
 % f = [0,500,600,6250];
 % a = [1,0,1];
@@ -263,10 +281,10 @@ end
 %still need to test the code on these and see if it can still match 
 %them to training data
 
-%TEST9
+% % % TEST9
 %record two more people? replace existing speakers with those people,
 %test again and compare accuracy?
 
-%TEST10
+% % % TEST10
 %test the system with other datasets, remember to change everything to the 
 %same sampling frequency
