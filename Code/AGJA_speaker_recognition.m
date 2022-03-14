@@ -40,8 +40,6 @@ mel_n = 1 + floor(N/2);
 % precompute the Hamming window
 window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
 
-
-
 for i = 1:1:length(training_audio)
     % i is the index of each speaker
     % calculate frame beg, end, and amount
@@ -66,7 +64,6 @@ for i = 1:1:length(training_audio)
 end
 
 %% LBG
-
 
 for i = 1:length(training_audio) %loop thru speakers
     % convert cell array to matrix, index 1 is mel coeff number, index 2 is frame
@@ -129,7 +126,7 @@ end
 %8 codewords for each speaker
 %% Get mel coeffs for test audio
 
-[test_audio, fs] = getAudioFiles('test');
+[test_audio, fs] = getAudioFiles('test filt');
 
 path = getPath();
 subpath = '/Data/Test_Data/anson_test.wav';
@@ -183,6 +180,8 @@ end
 %sound(training_audio{3},12500)
 %sound(test_audio{3})
 
+%% Project Tasks
+
 %TEST 1 
 %75% accuracy
 
@@ -210,7 +209,6 @@ end
 %figure;
 %pcolor(log10(mel_bins))
 
-
 %TEST4 1 plot
 %after cepstrum step, 1st coefficient removed, linear scale
 % mfcc_mat = (cell2mat(frames6(1,:)));
@@ -226,7 +224,7 @@ end
 % hold on
 %  scatter(mfcc_mat3(1,:),mfcc_mat3(3,:))
 
-%TEST6 1 plot
+% TEST6 1 plot
 %  mfcc_mat1 = cell2mat(frames6(1,:));
 %  mfcc_mat2 = cell2mat(frames6(2,:));
 %  scatter(mfcc_mat1(1,:),mfcc_mat1(3,:))
@@ -244,9 +242,13 @@ end
 %design notch filter, apply to signals, save as different test audio
 % f = [0,500,600,6250];
 % a = [1,0,1];
-% dev = [.01,.01,.01];
-% [n,fo,ao,w] = firpmord(f,a,dev,fs);
-% b = firpm(n,fo,ao,w);
+% dev = [.001,.001,.001];
+% n = firpmord(f,a,dev,fs);
+% n=200;
+% f = [0,.19,.2,.21,.22,1];
+% a = [1,1,0,0,1,1];
+% b = firpm(n,f,a);
+% freqz(b,1000)
 % %apply filter to audio signals
 % path = getPath();
 % subpath = '/Data/Test_Data/s';

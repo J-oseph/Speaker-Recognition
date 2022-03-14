@@ -11,6 +11,10 @@ if (strcmp(type,'test'))
 elseif (strcmp(type,'train'))
     subpath = '/Data/Training_Data/s';
     N = 11;
+elseif (strcmp(type,'test filt'))
+    subpath = '/Data/Test_Data/s';
+    ext = 'filt.wav';
+    N = 8;    
 end
 [audio,fs] = audioread(strcat(path,subpath,int2str(1),ext));
 g = {audio(:,1)};
