@@ -306,3 +306,10 @@ guesses = [];
 %     test_audio_filt{i} = ifft(TEST_AUDIO_FILT{i});
 %     audiowrite(strcat(path,subpath,int2str(i),ext),test_audio_filt{i},fs)
 % end
+
+% TEST9
+%Guesses our voices correctly
+
+%TEST10
+%82.14% overall accuracy on 28 test samples, and 16 different training 
+%voices
