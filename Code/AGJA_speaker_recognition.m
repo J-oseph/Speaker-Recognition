@@ -284,14 +284,14 @@ guesses = [];
 %With parameters, 256,100,20,.001,.01, and 8 code gets %100 correct,
 %much better than human 75% correct
 
-% % % TEST8
+% % TEST8
 %design notch filter, apply to signals, save as different test audio
 % f = [0,500,600,6250];
 % a = [1,0,1];
 % dev = [.001,.001,.001];
 % n = firpmord(f,a,dev,fs);
-% n=200;
-% f = [0,.19,.2,.21,.22,1];
+% n=150;
+% f = [0,.49,.5,.51,.52,1];
 % a = [1,1,0,0,1,1];
 % b = firpm(n,f,a);
 % freqz(b,1000)
