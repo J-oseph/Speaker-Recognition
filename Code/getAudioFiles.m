@@ -5,7 +5,6 @@ ext = '.wav';
 if (strcmp(type,'test'))
     subpath = '/Data/Test_Data/s';
     ext = '.wav';
-%     ext = 'filt.wav';
     N = 8;
 elseif (strcmp(type,'train'))
     subpath = '/Data/Training_Data/s';

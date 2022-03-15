@@ -2,7 +2,6 @@ clc;
 clear;
 close;
 
-
 %% Parameters
 
 % path is specific for each computer. Needs to go to the Repo folder
@@ -13,7 +12,7 @@ notched = false;
 
 % MFCC
 N = 256;
-M = 150;
+M = 100;
 P = 20;
 
 window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
@@ -27,7 +26,7 @@ codeword_lim = 8; %maximum number of centroids
 %% Get mel coeffs for training data
 % import the training data from data files
 [training_audio,fs] = getAudioFiles(path,'train');
-r = training_audio;
+
 %normalize audio signals - this may not be best way to normalize
 for i = 1:length(training_audio)
     training_audio{i} = training_audio{i}/max(training_audio{i});
@@ -36,7 +35,6 @@ end
 % get the filterband coeff's
 filterbank_coeff = melfb(P, N, fs);
 mel_n = 1 + floor(N/2);
-
 
 for i = 1:length(training_audio)
     % i is the index of each speaker
@@ -85,7 +83,7 @@ for i = 1:length(training_audio) %loop thru speakers
         %store previous error
         err_old = err_new;    
         
-        %initialize cell array to store frame ids for each centroid/empty old data
+        %initialize cell array to store frame ids for each centroid/empty out old data
         for k = 1:size(centroids{i},2)%for each centroid
             centroid_frames{k} = [];
         end
@@ -120,9 +118,8 @@ for i = 1:length(training_audio) %loop thru speakers
 end
 
 %Key output is centroids{i} indexed by speaker, each entry is 
-%a 8 x 19 set of centroids which represents the 19 coordinates of each of
-%8 codewords for each speaker
-
+%a Codeword Num x Mel Coeff Num Minus 1 set of centroids which represents the coordinates of each of
+% codewords for each speaker
 
 %% Get mel coeffs for test audio
 if (notched)
@@ -160,10 +157,9 @@ for i = 1:length(test_audio)
     end
 end
 
-
 %% Compare test audio to training audio
 guesses = [];
- for j = 1:length(test_audio) %pick which test audio file 1-8
+ for j = 1:length(test_audio) %loop thur test audio files 
      mfcc_mat = cell2mat(framest6(j,:)); %mel coeffs for speaker i converted to array
      for i = 1:length(training_audio) %loop thru training set
         d = disteu(mfcc_mat,centroids{i});
@@ -171,7 +167,6 @@ guesses = [];
      end
      [~,I] = min(distortion);
      guesses = [guesses I];
-%      disp(I) %displays which training audio that corresponds to
  end
 
  num_correct = 0;
@@ -218,19 +213,17 @@ guesses = [];
 
  end
  disp('Stoltenberg Audio: ')
- for j = 22:28
+ for j = 23:28
     txt = '';
     if (guesses(j) == 16)
         num_correct = num_correct + 1;
         txt = ' Correct';
     end
-    txt = ['    ','Guess #',num2str(j-21),': ',num2str(guesses(j)),' ',txt];
+    txt = ['    ','Guess #',num2str(j-22),': ',num2str(guesses(j)),' ',txt];
     disp(txt)
 
  end
  disp(['Overall Accuracy: ',num2str(num_correct/length(guesses) * 100),'%'])
-
-
 
 %% Project Tasks
 
@@ -290,7 +283,6 @@ guesses = [];
 % % % TEST7
 %With parameters, 256,100,20,.001,.01, and 8 code gets %100 correct,
 %much better than human 75% correct
-% works on my test and training data, need to get joe's voice
 
 % % % TEST8
 %design notch filter, apply to signals, save as different test audio
@@ -314,13 +306,3 @@ guesses = [];
 %     test_audio_filt{i} = ifft(TEST_AUDIO_FILT{i});
 %     audiowrite(strcat(path,subpath,int2str(i),ext),test_audio_filt{i},fs)
 % end
-%still need to test the code on these and see if it can still match 
-%them to training data
-
-% % % TEST9
-%record two more people? replace existing speakers with those people,
-%test again and compare accuracy?
-
-% % % TEST10
-%test the system with other datasets, remember to change everything to the 
-%same sampling frequency
