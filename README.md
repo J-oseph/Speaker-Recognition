@@ -1,4 +1,8 @@
-# Speaker Recognition # 
+# AGJA Speaker Recognition # 
+### DATASET USED  ###
+https://www.kaggle.com/kongaevans/speaker-recognition-dataset
+### TESTS  ###
+PDF with Tests: Speaker_Recognition_Tests.pdf
 ### INSTRUCTIONS  ###
 
 Top level file: AGJA_speaker_recognition.m    
