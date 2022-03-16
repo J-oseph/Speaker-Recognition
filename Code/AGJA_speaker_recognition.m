@@ -3,27 +3,36 @@ clear;
 close;
 
 %% Parameters
+%See plots: https://docs.google.com/document/d/1KnaerZkLvfVsmIlcVzaxp3lK3FP1to0vSx1QIZoXEUY/edit?usp=sharing
+
+%INSTRUCTIONS
+%Replace getPath(); with correct path per below, and then press run,
+%code will display accuracy rate on original audio as well as extra audio.
+%To test on the audio files that have been put through a notch filter,
+%set notched to true. To adjust the notch filter, see TEST8 at the bottom.
+%All relevant parameters are listed here, the current setting is tied for 
+%best performance in our testing.
 
 % path is specific for each computer. Needs to go to the Repo folder
 % should be something like 'C:\....\Speaker-Recognition'
 path = getPath(); % REPLACE THIS!!!!
 
-notched = false;
+notched = false;%throws an error when true, but still runs correctly
 
 % MFCC
 N = 256;
 M = 100;
 P = 20;
 
-window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));
+window = 0.54-0.46.*cos(2*pi*[0:1:N-1]./(N-1));%hamming
 
 %LBG 
 thresh = .001; %thresh*100 is allowed percent error change 
 epsilon = .01; %splitting parameter
 codeword_lim = 8; %maximum number of centroids
 
-
 %% Get mel coeffs for training data
+
 % import the training data from data files
 [training_audio,fs] = getAudioFiles(path,'train');
 
@@ -59,8 +68,8 @@ for i = 1:length(training_audio)
     end
 end
 
-
 %% LBG
+
 for i = 1:length(training_audio) %loop thru speakers
     % convert cell array to matrix, index 1 is mel coeff number, index 2 is frame
     mfcc_mat = cell2mat(frames6(i,:)); 
@@ -122,6 +131,7 @@ end
 % codewords for each speaker
 
 %% Get mel coeffs for test audio
+
 if (notched)
     param = 'notched';
 else
@@ -158,6 +168,7 @@ for i = 1:length(test_audio)
 end
 
 %% Compare test audio to training audio
+
 guesses = [];
  for j = 1:length(test_audio) %loop thur test audio files 
      mfcc_mat = cell2mat(framest6(j,:)); %mel coeffs for speaker i converted to array
@@ -169,6 +180,8 @@ guesses = [];
      guesses = [guesses I];
  end
 
+ %% Display
+ 
  num_correct = 0;
  disp('Original Audio: ')
  for j = 1:8
@@ -237,31 +250,35 @@ guesses = [];
 % %plot time domain signal
 % plot(training_audio{1})
 % title('Time Domain Signal')
-% %plot stft using mfcc code directly, plot on log scale
+% %plot stft using mfcc code intermediate step, plot on log scale
 % figure;
 % stft_mat = (cell2mat(frames3(1,:)'));
 % pcolor(log10(stft_mat(:,floor(1:N/2)))') %plot 0 to pi
-% title('Periodogram')
+% xlabel('Frame #')
+% title('Spectrogram N=256,M=100')
+% colorbar
 % %(run again with different N, and M)
 
-% % % TEST3 2 plots
-% plot mel spaced filterbank responses
-% compare to theoretical? maybe we're supposed to say it looks a little 
-% jagged in some places due to discretization error of N = 256?
+% TEST3 2 plots
+%plot mel spaced filterbank responses
 % z = melfb(P, N, fs);
 % plot(linspace(0, (12500/2), 129), z'),
 % title('Mel-spaced filterbank'), xlabel('Frequency (Hz)');
 % % before cepstrum, after mel applied, plot on log scale
-% mel_bins = (cell2mat(frames4(i,:)));
+% mel_bins = (cell2mat(frames4(1,:)));
 % figure;
 % pcolor(log10(mel_bins))
+% title('Mel Filterbank Response')
+% xlabel('Frame #'),ylabel('Mel Bin Number')
+% colorbar
 
-% % % TEST4 1 plot
+% % TEST4 1 plot
 %after cepstrum step, 1st coefficient removed, linear scale
 % mfcc_mat = (cell2mat(frames6(1,:)));
 % pcolor(mfcc_mat)
+% title('MFCC'),xlabel('Frame #'), ylabel('MFCC #'),colorbar
 
-% % % TEST5 1 plot
+% % TEST5 1 plot
 %  mfcc_mat1 = cell2mat(frames6(1,:));
 %  mfcc_mat2 = cell2mat(frames6(2,:));
 %  mfcc_mat3 = cell2mat(frames6(3,:));
@@ -270,15 +287,15 @@ guesses = [];
 %  scatter(mfcc_mat2(1,:),mfcc_mat2(3,:))
 % hold on
 %  scatter(mfcc_mat3(1,:),mfcc_mat3(3,:))
+% title('2D MFCC, Speakers 1-3'),xlabel('Coeff 1'),ylabel('Coeff 3')
 
 % % % TEST6 1 plot
 %  mfcc_mat1 = cell2mat(frames6(1,:));
 %  mfcc_mat2 = cell2mat(frames6(2,:));
 %  scatter(mfcc_mat1(1,:),mfcc_mat1(3,:))
-%  hold on
-%  scatter(mfcc_mat2(1,:),mfcc_mat2(3,:))
 %  hold on 
 %  scatter(centroids{1}(1,1:8),centroids{1}(3,1:8),'filled')
+%  title('2D MFCC, Speaker 1, Centroids Displayed'),xlabel('Coeff 1'),ylabel('Coeff 3')
 
 % % % TEST7
 %With parameters, 256,100,20,.001,.01, and 8 code gets %100 correct,
@@ -286,10 +303,6 @@ guesses = [];
 
 % % TEST8
 %design notch filter, apply to signals, save as different test audio
-% f = [0,500,600,6250];
-% a = [1,0,1];
-% dev = [.001,.001,.001];
-% n = firpmord(f,a,dev,fs);
 % n=150;
 % f = [0,.49,.5,.51,.52,1];
 % a = [1,1,0,0,1,1];
