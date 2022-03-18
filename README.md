@@ -2,7 +2,7 @@
 ### DATASET USED  ###
 https://www.kaggle.com/kongaevans/speaker-recognition-dataset
 ### REPORT  ###
-PDF with Resport: Speaker_Recognition_Report.pdf
+PDF with Report: Speaker_Recognition_Report.pdf
 ### INSTRUCTIONS  ###
 
 Top level file: AGJA_speaker_recognition.m    
