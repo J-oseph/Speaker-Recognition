@@ -3,6 +3,8 @@
 https://www.kaggle.com/kongaevans/speaker-recognition-dataset
 ### REPORT  ###
 PDF with Report: Speaker_Recognition_Report.pdf
+### VIDEO  ###
+https://youtu.be/fuKWjDwsfXM
 ### INSTRUCTIONS  ###
 
 Top level file: AGJA_speaker_recognition.m    
