@@ -3,21 +3,25 @@ clear;
 close;
 
 %% Parameters
-%See plots: https://docs.google.com/document/d/1KnaerZkLvfVsmIlcVzaxp3lK3FP1to0vSx1QIZoXEUY/edit?usp=sharing
 
-%INSTRUCTIONS
-%Replace getPath(); with correct path per below, and then press run,
-%code will display accuracy rate on original audio as well as extra audio.
-%To test on the audio files that have been put through a notch filter,
-%set notched to true. To adjust the notch filter, see TEST8 at the bottom.
-%All relevant parameters are listed here, the current setting is tied for 
-%best performance in our testing.
+% =====INSTRUCTIONS===== %
+
+% CONSULT README FOR MOST UP TO DATE INFO
+
+% Replace getPath(); with correct path per below, and then press run,
+% code will display accuracy rate on original audio as well as extra audio.
+% To test on the audio files that have been put through a notch filter,
+% set notched to true. To adjust the notch filter, see TEST8 at the bottom.
+% All relevant parameters are listed here, the current setting is tied for 
+% best performance in our testing.
 
 % path is specific for each computer. Needs to go to the Repo folder
 % should be something like 'C:\....\Speaker-Recognition'
 path = getPath(); % REPLACE THIS!!!!
 
-notched = false;%throws an error when true, but still runs correctly
+% Choose whether or not you want to use the notched audio of the original
+% dataset. Will not compute accuracy for extra speakers if true:
+notched = false; % MAKE SURE = false
 
 % MFCC
 N = 256;
@@ -183,7 +187,11 @@ guesses = [];
  %% Display
  
  num_correct = 0;
- disp('Original Audio: ')
+ if (notched)
+     disp('Original Audio (notched): ')
+ else
+    disp('Original Audio: ')
+ end
  for j = 1:8
     txt = '';
     if (guesses(j) == j)
@@ -204,6 +212,7 @@ guesses = [];
     txt = ['    ','Guess #',num2str(j),': ',num2str(guesses(j-3)),' ',txt];
     disp(txt)
  end
+ if (~notched)
  disp('Mandela Audio: ')
  for j = 11:16
     txt = '';
@@ -234,6 +243,7 @@ guesses = [];
     end
     txt = ['    ','Guess #',num2str(j-22),': ',num2str(guesses(j)),' ',txt];
     disp(txt)
+ end
 
  end
  disp(['Overall Accuracy: ',num2str(num_correct/length(guesses) * 100),'%'])
